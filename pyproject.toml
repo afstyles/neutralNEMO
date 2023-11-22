@@ -1,0 +1,22 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "neutralNEMO_afstyles"
+version = "0.0.1"
+authors = [
+  { name="Andrew Styles", email="afstylesocean@gmail.com" },
+]
+description = "A package to calculate approximate neutral surfaces in NEMO"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/afstyles/neutralNEMO"
+Issues = "https://github.com/afstyles/neutralNEMO/issues"
