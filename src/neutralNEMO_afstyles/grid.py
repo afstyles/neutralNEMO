@@ -14,29 +14,29 @@ def build_nemo_grid( hgriddata, iperio = True, jperio = False, verbose=False):
 
     return grid
 
-def load_hgriddata( path, e1u_varname = "e1u", e2u_varname = "e2u", e1v_varname = "e1v", e2v_varname = "e2v" ):
+def load_hgriddata( path, e1u_varname = "e1u", e2u_varname = "e2u", e1v_varname = "e1v", e2v_varname = "e2v"):
 
     dataset = xr.open_dataset(path)
 
     hgriddata = {}
 
     try:
-        hgriddata["e1u"] = dataset[e1u_varname]
+        hgriddata["e1u"] = dataset[e1u_varname].squeeze()
     except:
         print("Variable ", e1u_varname, " not found in: ", path)
     
     try:
-        hgriddata["e2u"] = dataset[e2u_varname]
+        hgriddata["e2u"] = dataset[e2u_varname].squeeze()
     except:
         print("Variable ", e2u_varname, " not found in: ", path)
 
     try:
-        hgriddata["e1v"] = dataset[e1v_varname]
+        hgriddata["e1v"] = dataset[e1v_varname].squeeze()
     except:
         print("Variable ", e1v_varname, " not found in: ", path)
     
     try:
-        hgriddata["e2v"] = dataset[e2v_varname]
+        hgriddata["e2v"] = dataset[e2v_varname].squeeze()
     except:
         print("Variable ", e2v_varname, " not found in: ", path)
     
