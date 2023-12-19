@@ -1,4 +1,4 @@
-API
+Public Function Reference
 ===
 
 .. autosummary::
