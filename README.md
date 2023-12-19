@@ -1,6 +1,6 @@
 # neutralNEMO (v0.9.0, early release)
 
-Calculate neutral surfaces in NEMO ([Madec et al., 2019](https://zenodo.org/doi/10.5281/zenodo.1464816)) model runs using neutralNEMO!
+Calculate neutral surfaces for NEMO ([Madec et al., 2019](https://zenodo.org/doi/10.5281/zenodo.1464816)) model runs using neutralNEMO!
 
 This package makes it easier to use the highly-optimized algorithms of the [neutralocean](https://github.com/geoffstanley/neutralocean/tree/main) package ([Stanley et al., 2021](https://doi.org/10.1029/2020MS002436)) with model outputs from NEMO.
 
