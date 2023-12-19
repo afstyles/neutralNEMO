@@ -3,8 +3,8 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "neutralNEMO_afstyles"
-version = "0.0.1"
+name = "neutralNEMO"
+version = "0.9.0"
 authors = [
   { name="Andrew Styles", email="afstylesocean@gmail.com" },
 ]
