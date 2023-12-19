@@ -4,4 +4,6 @@ API
 .. autosummary::
    :toctree: generated
 
-   lumache
+   src/neutralNEMO/grid 
+
+   src/neutralNEMO/surf
