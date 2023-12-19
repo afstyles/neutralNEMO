@@ -11,6 +11,9 @@ authors = [
 description = "A package to calculate approximate neutral surfaces with NEMO model output"
 readme = "README.md"
 requires-python = ">=3.7"
+dependencies = [
+  "neutralocean>2.1.2",
+]
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
