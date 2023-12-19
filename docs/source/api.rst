@@ -5,4 +5,4 @@ Public Function Reference
    :toctree: generated
 
 
-.. autofunction:: neutralNEMO.surf.load_tsdata
+.. autofunction:: surf.load_tsdata
