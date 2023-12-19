@@ -1,6 +1,8 @@
 # Configuration file for the Sphinx documentation builder.
 
 # -- Project information
+sys.path.insert(0,"src/")
+
 
 project = 'neutralNEMO'
 copyright = '2023, Andrew Styles'
