@@ -1,6 +1,7 @@
 # Configuration file for the Sphinx documentation builder.
 
 # -- Project information
+import sys
 sys.path.insert(0,"src/")
 
 
