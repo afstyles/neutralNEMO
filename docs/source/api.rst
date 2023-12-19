@@ -6,3 +6,4 @@ Public Function Reference
 
 
 .. autofunction:: surf.load_tsdata
+.. autofunction:: neutralNEMO.surf.load_tsdata
