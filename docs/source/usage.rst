@@ -16,8 +16,8 @@ neutralNEMO can be installed through pip
 Example of use 
 --------------
 
-First, we will use the load_hgridata and load_zgriddata routines to load the necessary
-data from the model grid file (typically a mesh_mask or domaincfg file)
+First, we will use the ``load_hgridata`` and ``load_zgriddata`` routines to load the necessary
+data from the model grid file (typically a ``mesh_mask`` or ``domaincfg`` file)
 
 .. code-block:: Python
 
@@ -26,8 +26,8 @@ data from the model grid file (typically a mesh_mask or domaincfg file)
    hgd = load_hgriddata( "/path/to/file/mesh_mask.nc" )
    zgd = load_zgriddata( "/path/to/file/mesh_mask.nc" )
 
-hgd and zgd are dictionaries containing cell widths, cell thicknesses and T-point masks
-contained within mesh_mask.nc. The netcdf variable names for these terms can vary
+``hgd`` and ``zgd`` are dictionaries containing cell widths, cell thicknesses and T-point masks
+contained within ``mesh_mask.nc``. The netcdf variable names for these terms can vary
 between datasets and can be adjusted accordinly using keyword arguments. For example:
 
 .. code-block:: Python
@@ -36,7 +36,7 @@ between datasets and can be adjusted accordinly using keyword arguments. For exa
 
 A complete list of the available keyword arguments can be found in the :doc:`api`.
 
-We then need to create a neutralocean grid object. This can be simply done using the build_nemo_hgrid
+We then need to create a ``neutralocean`` grid object. This can be simply done using the ``build_nemo_hgrid``
 routine
 
 .. code-block:: Python
@@ -45,8 +45,8 @@ routine
 
    neutral_grid = build_nemo_hgrid( hgd, iperio=False, jperio = False)
 
-The iperio and jperior keyword arguments specify the periodicity of the model domain. For example, if
-iperio = True then the model is periodic in the i-direction (this is the case for a global configuration)
+The ``iperio`` and ``jperio`` keyword arguments specify the periodicity of the model domain. For example, if
+``iperio = True`` then the model is periodic in the i-direction (this is the case for a global configuration).
 
 The last step before calculating our neutral surface is the loading of the temperature and salinity data.
 
@@ -79,10 +79,10 @@ In the above example, two neutral surfaces are calculated. The first surface is 
 j=9) in the final time step. The second surface is the same but pinned to 300 m depth. The surfaces depths,
 temperatures, and salinities are outputted as an xarray DataSet and can be easilly saved to netcdf.
 
-To calculate the initial potential density, the equation of state needs to be known. In this case, the gsw 
+To calculate the initial potential density, the equation of state needs to be known. In this case, the ``gsw`` 
 equation of state is adopted (see neutralocean documentation for specifics on the equation of state.)
 
-ITER_MAX=10 sets the maximum number of iterations carried out by the neutralocean algorithm.
+``ITER_MAX=10`` sets the maximum number of iterations carried out by the neutralocean algorithm.
 
-Calc_veronis=True, enables the calculation of the Veronis density as a label for the density surfaces.
+``calc_veronis=True``, enables the calculation of the Veronis density as a label for the density surfaces.
 
