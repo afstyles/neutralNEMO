@@ -1,5 +1,4 @@
 import xarray as xr
-import grid
 import numpy as np
 from neutralocean.label import veronis_density
 from neutralocean.surface.isopycnal import potential_surf
