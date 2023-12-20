@@ -5,15 +5,30 @@ Usage
 
 Installation
 ------------
-
-To use neutralNEMO, first install it using pip:
+neutralNEMO is available to install through conda
 
 .. code-block:: console
 
-   (.venv) $ pip install lumache
+   (.venv) $ conda install -c conda-forge neutralNEMO
 
-Creating recipes
-----------------
+or can be installed through pip
+
+.. code-block:: console
+
+   (.venv) $ pip install neutralNEMO
+
+
+Example of use 
+--------------
+
+.. code-block:: Python
+
+   from neutralNEMO.grid import build_nemo_hgrid, load_hgriddata, load_zgriddata
+
+
+
+
+
 
 To retrieve a list of random ingredients,
 you can use the ``lumache.get_random_ingredients()`` function:
