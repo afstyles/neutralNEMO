@@ -3,8 +3,8 @@ Welcome to neutralNEMO's documentation!
 
 **neutralNEMO** is a Python library which helps users calculate neutral surfaces from NEMO model outputs.
 
-This library makes it easier to use the highly-optimized algorithms of the `neutralocean <https://github.com/geoffstanley/neutralocean>` 
-package (`Stanley et al., 2021 <https://doi.org/10.1029/2020MS002436>`) with model outputs from NEMO.
+This library makes it easier to use the highly-optimized algorithms of the `neutralocean <https://github.com/geoffstanley/neutralocean>`_ 
+package (`Stanley et al., 2021 <https://doi.org/10.1029/2020MS002436>`_) with model outputs from NEMO.
 
 The package contains routines to correctly load temperature and salinity data alongside the necessary horizontal and vertical grid information.
 
