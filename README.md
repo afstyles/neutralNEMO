@@ -10,13 +10,7 @@ A steamlined routine is also included to calculate an approximately neutral dens
 
 # Installation
 
-neutralNEMO is available to install through conda
-
-```
-conda install -c conda-forge neutralNEMO
-```
-
-or can be installed through pip
+neutralNEMO can be installed through pip
 
 ```
 pip install neutralNEMO

@@ -5,13 +5,8 @@ Usage
 
 Installation
 ------------
-neutralNEMO is available to install through conda
 
-.. code-block:: console
-
-   (.venv) $ conda install -c conda-forge neutralNEMO
-
-or can be installed through pip
+neutralNEMO can be installed through pip
 
 .. code-block:: console
 
@@ -74,7 +69,7 @@ Now we have our temperature and grid information we can finally calculate our ne
    jpins = [9, 9]         # List of j-indices to pin each surface to
    tpins = [-1,-1]        # List of time indices to pin each surface to
 
-   surf_dataset = surf.find_omega_surfs( tsd, neutral_grid , zgd, [150., 300.], [10,10], [9,9], [-1,-1],
+   surf_dataset = find_omega_surfs( tsd, neutral_grid , zgd, [150., 300.], [10,10], [9,9], [-1,-1],
                                          eos="gsw", ITER_MAX=10, calc_veronis=True)
 
    #Save as netcdf (optional)
