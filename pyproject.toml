@@ -4,13 +4,13 @@ build-backend = "hatchling.build"
 
 [project]
 name = "neutralNEMO"
-version = "0.9.2"
+version = "0.9.3"
 authors = [
   { name="Andrew Styles", email="afstylesocean@gmail.com" },
 ]
 description = "A package to calculate approximate neutral surfaces with NEMO model output"
 readme = "README.md"
-requires-python = ">=3.7,<3.8"
+requires-python = ">=3.8,<3.9"
 dependencies = [
   "neutralocean>=2.1.2",
 ]
