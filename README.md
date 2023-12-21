@@ -1,4 +1,4 @@
-# neutralNEMO (v0.9.3, early release)
+# neutralNEMO (v0.9.4, early release)
 
 Calculate neutral surfaces for NEMO ([Madec et al., 2019](https://zenodo.org/doi/10.5281/zenodo.1464816)) model runs using neutralNEMO!
 
@@ -10,7 +10,13 @@ A steamlined routine is also included to calculate an approximately neutral dens
 
 # Installation
 
-neutralNEMO can be installed through pip
+neutralNEMO can be installed using conda:
+
+```
+conda install -c conda-forge neutralnemo
+```
+
+or alternatively, neutralNEMO can be installed through pip
 
 ```
 pip install neutralNEMO
