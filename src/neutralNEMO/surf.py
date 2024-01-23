@@ -241,10 +241,11 @@ def find_omega_surfs( tsdata, neutralgrid, zgriddata,
         shared_attrs = {"ipin":ipin, "jpin":jpin, "pot_ref": pot_ref, "eos":eos}
 
         if calc_veronis==True:
-            rho_ver = 1/veronis_density(tsdata["so"].values[tpin,:,jpin,ipin],
-                                        tsdata["to"].values[tpin,:,jpin,ipin],
-                                        zgriddata["deptht"].values[:,jpin,ipin],
-                                        zpin, eos=eos, p_ref=ver_ref)
+
+            rho_ver = 1/veronis_density(tsdata["so"].to_numpy()[tpin,:,jpin,ipin],
+                                        tsdata["to"].to_numpy()[tpin,:,jpin,ipin],
+                                        zgriddata["deptht"].where(zgriddata["tmask3d"]).to_numpy()[:,jpin,ipin],
+                                        float(zpin), eos=eos, p_ref=ver_ref)
 
 
         if calc_potsurf==True:
@@ -253,7 +254,7 @@ def find_omega_surfs( tsdata, neutralgrid, zgriddata,
                                     zgriddata["deptht"][:,:,:],
                                     grid=neutralgrid, vert_dim="z_t",
                                     ref=pot_ref, pin_cast=(jpin,ipin), 
-                                    pin_p=zpin, eos=eos )
+                                    pin_p=float(zpin), eos=eos )
             
             rho_pot = 1/d["isoval"] #Potential density value
 
@@ -286,7 +287,7 @@ def find_omega_surfs( tsdata, neutralgrid, zgriddata,
                                  zgriddata["deptht"][:,:,:],
                                  neutralgrid, vert_dim="z_t",
                                  ref=pot_ref, pin_cast=(jpin,ipin),
-                                 pin_p=zpin, eos=eos, ITER_MAX=ITER_MAX,
+                                 pin_p=float(zpin), eos=eos, ITER_MAX=ITER_MAX,
                                  **kwargs)
             
             #Prepare depth data in DataArray

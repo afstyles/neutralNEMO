@@ -1,7 +1,6 @@
-from neutralocean.grid.rectilinear import build_grid
 import xarray as xr
 
-def build_nemo_hgrid( hgriddata, iperio = True, jperio = False):
+def build_nemo_hgrid( hgriddata, iperio = True, jperio = False, gridtype="rectilinear" ):
     """
     Create NeutralOcean grid object from a dictionary of horizontal grid variables.
 
@@ -53,6 +52,7 @@ def build_nemo_hgrid( hgriddata, iperio = True, jperio = False):
             linear indices are `edges[0][i]` and `edges[1][i]`.
 
     """
+        
 
 
     e1u = hgriddata["e1u"]
@@ -62,9 +62,19 @@ def build_nemo_hgrid( hgriddata, iperio = True, jperio = False):
 
     shape = ( e1u.shape[-2], e1u.shape[-1] )
 
-    neutralgrid = build_grid( shape, (jperio,iperio), dyC=e1u.to_numpy(), dxC=e2v.to_numpy(), 
-                      dyG=e1v.to_numpy(), dxG=e2u.to_numpy()  )
+    if gridtype.lower() == 'rectilinear':
+        from neutralocean.grid.rectilinear import build_grid
+        neutralgrid = build_grid( shape, (jperio,iperio), dyC=e1u.to_numpy(), dxC=e2v.to_numpy(), 
+                                  dyG=e1v.to_numpy(), dxG=e2u.to_numpy()  )
 
+    elif gridtype.lower() == 'orca':
+        from neutralocean.grid.tripolar import build_grid
+        neutralgrid = build_grid( shape, e1u=e1u.to_numpy(), e2u=e2u.to_numpy(),
+                                  e1v=e1v.to_numpy(), e2v=e2v.to_numpy())
+
+    else:
+        raise ValueError("{} is not a supported grid type".format(gridtype))
+        
     return neutralgrid
 
 def load_hgriddata( path, e1u_varname = "e1u", e2u_varname = "e2u", e1v_varname = "e1v",
@@ -183,7 +193,11 @@ def load_hgriddata( path, e1u_varname = "e1u", e2u_varname = "e2u", e1v_varname 
 
 
 def load_zgriddata( path, deptht_varname="gdept_0", tmask3d_varname="tmask", tmask2d_varname="tmaskutil", 
-                    vert_dim="nav_lev", i_dim="x", j_dim="y", open_mf=False, **kwargs ):
+                    vert_dim="nav_lev", i_dim="x", j_dim="y", open_mf=False, 
+                    infer_tmask2d=False, blev_varname="bottom_level", infer_tmask3d=False, 
+                    infer_path='nemo-T.nc', infer_varname='so', 
+                    infer_tdim="time_counter", infer_idim="x", infer_jdim="y", infer_zdim="deptht",
+                    infer_val=None, **kwargs ):
     """
     Create zgriddata dictionary by loading from a standard NEMO output (either a 
     mesh_mask or domaincfg file) or a netcdf file containing the necessary C-grid
@@ -269,6 +283,12 @@ def load_zgriddata( path, deptht_varname="gdept_0", tmask3d_varname="tmask", tma
     if vert_dim != "z_t": dataset = dataset.rename({vert_dim:"z_t"}) 
     if i_dim != "x": dataset = dataset.rename({i_dim:"x"})
     if j_dim != "y": dataset = dataset.rename({j_dim:"y"})
+
+    if infer_tmask3d == True:
+        infer_dataset = xr.open_dataset(infer_path,**kwargs)
+        if infer_zdim != "z_t": infer_dataset = infer_dataset.rename({infer_zdim:"z_t"}) 
+        if infer_idim != "x": infer_dataset = infer_dataset.rename({infer_idim:"x"})
+        if infer_jdim != "y": infer_dataset = infer_dataset.rename({infer_jdim:"y"})
     
     zgriddata = {}
 
@@ -277,15 +297,34 @@ def load_zgriddata( path, deptht_varname="gdept_0", tmask3d_varname="tmask", tma
     except:
         print("Variable {} not found in: {}".format(deptht_varname, path))
 
-    try:
-        zgriddata["tmask3d"] = dataset[tmask3d_varname].squeeze().astype(bool)
-    except:
-        print("Variable {} not found in: {}".format(tmask3d_varname, path))
+    if infer_tmask3d == False:
+        print("Loading masks directly from files")
+        try:
+            zgriddata["tmask3d"] = dataset[tmask3d_varname].squeeze().astype(bool)
+        except:
+            print("Variable {} not found in: {}".format(tmask3d_varname, path))
 
-    try:
-        zgriddata["tmask2d"] = dataset[tmask2d_varname].squeeze().astype(bool)
-    except:
-        print("Variable {} not found in: {}".format(tmask2d_varname, path))
+    else:
+        print("Inferring tmask3d from other data field [Variable {} in File {}]".format(infer_varname, infer_path))
+        infer_var = infer_dataset[infer_varname]
+        if infer_tdim in infer_var.dims: infer_var = infer_var.isel({infer_tdim:-1})
+        
+        if infer_val is None:
+            zgriddata["tmask3d"] = infer_var.notnull()
+        else:
+            zgriddata["tmask3d"] = xr.where(infer_var == infer_val, False, True).astype(bool)
+
+    if infer_tmask2d == False:
+
+        try:
+            zgriddata["tmask2d"] = dataset[tmask2d_varname].squeeze().astype(bool)
+        except:
+            print("Variable {} not found in: {}".format(tmask2d_varname, path))
+
+    else:
+        print("Inferring tmask2d from bottom level data [Variable {} in file {}]".format(blev_varname, path))
+        blev = dataset[blev_varname].squeeze().astype(int)
+        zgriddata["tmask2d"] = xr.where(blev == 0, False, True).astype(bool)
 
     return zgriddata
 
