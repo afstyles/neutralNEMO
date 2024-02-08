@@ -96,6 +96,7 @@ def find_omega_surfs( tsdata, neutralgrid, zgriddata,
                      zpins, ipins, jpins, tpins, eos="gsw" ,
                      ITER_MAX=10, 
                      calc_veronis=True, calc_potsurf=True,
+                     ver_ipins=None, ver_jpins=None,
                      ver_ref=0., pot_ref=0., **kwargs):
     
     """
@@ -215,6 +216,26 @@ def find_omega_surfs( tsdata, neutralgrid, zgriddata,
         location in space and time. If you set ITER_MAX=0 while calc_potsurf=True,
         only potential density surfaces will be calculated.        
 
+    ver_ipins: None or Integer or list of Integers (default=None)
+        i-index (or indices) to calculate the Veronis density (if 
+        calc_veronis = True). If a single integer, then the Veronis density 
+        is calculate at the same position (ver_ipin, ver_jpin) for all surfaces
+        (the preferred method for consisten Veronis density)
+        
+        If None, then ver_ipins = ipins. 
+        
+        If a list of integers, then the length of the list must match ipins. 
+
+    ver_jpins: None or Integer or list of Integers (default=None)
+        j-index (or indices) to calculate the Veronis density (if 
+        calc_veronis = True). If a single integer, then the Veronis density 
+        is calculate at the same position (ver_ipin, ver_jpin) for all surfaces
+        (the preferred method for consisten Veronis density)
+        
+        If None, then ver_jpins = jpins. 
+        
+        If a list of integers, then the length of the list must match jpins. 
+
     ver_ref:
         Reference depth for the calculation of the Veronis density (if 
         calc_veronis = True)
@@ -238,13 +259,30 @@ def find_omega_surfs( tsdata, neutralgrid, zgriddata,
 
     for zpin, ipin, jpin, tpin, n in zip(zpins, ipins, jpins, tpins, range(len(zpins))):
 
-        shared_attrs = {"ipin":ipin, "jpin":jpin, "pot_ref": pot_ref, "eos":eos}
+        shared_attrs = {"ipin":ipins, "jpin":jpins, "pot_ref": pot_ref, "eos":eos}
 
         if calc_veronis==True:
 
-            rho_ver = 1/veronis_density(tsdata["so"].to_numpy()[tpin,:,jpin,ipin],
-                                        tsdata["to"].to_numpy()[tpin,:,jpin,ipin],
-                                        zgriddata["deptht"].where(zgriddata["tmask3d"]).to_numpy()[:,jpin,ipin],
+            if ver_ipins is None: ver_ipin = ipin   #If None, use ipin
+            elif type(ver_ipins) is list:  ver_ipin = ver_ipins[n] #If list, use nth element
+            else: ver_ipin = ver_ipins #If integer, use same point every time
+
+            if ver_jpins is None: ver_jpin = jpin                  #If None, use jpin
+            elif type(ver_jpins) is list:  ver_jpin = ver_jpins[n] #If list, use nth element
+            else: ver_jpin = ver_jpins                             #If integer, use same point every time
+
+            if ver_ipins is None: shared_attrs["ver_ipins"] = ipins
+            else: shared_attrs["ver_ipins"] = ver_ipins
+
+            if ver_jpins is None: shared_attrs["ver_jpins"] = jpins
+            else: shared_attrs["ver_jpins"] = ver_jpins
+
+
+
+
+            rho_ver = 1/veronis_density(tsdata["so"].to_numpy()[tpin,:,ver_jpin,ver_ipin],
+                                        tsdata["to"].to_numpy()[tpin,:,ver_jpin,ver_ipin],
+                                        zgriddata["deptht"].where(zgriddata["tmask3d"]).to_numpy()[:,ver_jpin,ver_ipin],
                                         float(zpin), eos=eos, p_ref=ver_ref)
 
 
