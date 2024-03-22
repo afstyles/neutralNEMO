@@ -43,7 +43,7 @@ can vary between datasets and can be adjusted accordingly using keyword argument
 
 .. code-block:: Python
 
-   hgd = load_hgriddata( "domcfg_eORCA1v2.2x.nc"  , e1u_varname="e1u_0")
+   hgd = load_hgriddata( "mesh_mask.nc"  , e1u_varname="e1u_0")
 
 When loading the vertical grid data, we load cell thicknesses alongside the two-dimensional (y,x) and three-dimensional 
 (z,y,x) T point mask. In this case, the necessary masks are contained in the ``mesh_mask.nc`` file.
@@ -84,7 +84,8 @@ Load T-S data
    
    from neutralNEMO.surf import load_tsdata
 
-   tsd = load_tsdata("GYRE_1m_04110101_04201230_grid_T.nc", zgd, to_varname="votemper", so_varname="vosaline")
+   tsd = load_tsdata("GYRE_1m_04110101_04201230_grid_T.nc", zgd, 
+                     to_varname="votemper", so_varname="vosaline")
 
 As shown above, netcdf variable names can be specified as a keyword argument. In this case, ``votemper`` is the variable name
 for the potential temperature and ``vosaline`` is the practical salinity.

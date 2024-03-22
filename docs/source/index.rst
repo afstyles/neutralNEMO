@@ -29,4 +29,4 @@ Contents
 
    orcaexample
    rectexample
-   examples
+   api
