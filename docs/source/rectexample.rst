@@ -16,7 +16,7 @@ coordinate axes. Rectilinear grids are often used in NEMO test configurations su
 
 Example rectilinear data can be downloaded from the following archive
 
-`Link to Zenodo archive <https://doi.org/10.1029/2020MS002436>`
+`Link to Zenodo archive <https://doi.org/10.5281/zenodo.10639898>`_
 
 You will need the following files
 
@@ -36,7 +36,7 @@ Loading the horizontal grid data is simple enough
 
    from neutralNEMO.grid import load_hgriddata
 
-   hgd = load_hgriddata( "domcfg_eORCA1v2.2x.nc"  )
+   hgd = load_hgriddata( "mesh_mask.nc"  )
 
 ``hgd`` is a dictionary containing cell widths for the grid. The netcdf variable name for all of these terms
 can vary between datasets and can be adjusted accordingly using keyword arguments. For example:
@@ -46,25 +46,19 @@ can vary between datasets and can be adjusted accordingly using keyword argument
    hgd = load_hgriddata( "domcfg_eORCA1v2.2x.nc"  , e1u_varname="e1u_0")
 
 When loading the vertical grid data, we load cell thicknesses alongside the two-dimensional (y,x) and three-dimensional 
-(z,y,x) T point mask. Often the masks are not provided explicitly in the grid data but are applied to the data. This is the
-case for the example dataset ``domcfg_eORCA1v2.2x.nc`` so additional keyword arguments are needed. For example:
+(z,y,x) T point mask. In this case, the necessary masks are contained in the ``mesh_mask.nc`` file.
 
 .. code-block:: Python
 
    from neutralNEMO.grid import load_zgriddata
 
-   zgd = load_zgriddata( "domcfg_eORCA1v2.2x.nc", infer_tmask2d=True, infer_tmask3d=True, 
-                          infer_path="nemo_bu978o_1y_19771201-19781201_grid-T.nc", 
-                          infer_varname="so", vert_dim="z" )
+   zgd = load_zgriddata( "mesh_mask.nc", vert_dim="nav_lev" )
 
-``zgd`` is a dictionary containing depth information, the two-dimensional T mask, and the three-dimensional T mask.
+``zgd`` is a dictionary containing depth information, the two-dimensional T mask, and the three-dimensional T mask. Note that 
+the vertical dimension name of the netcdf file had to be specified, because it was a non-default name.
 
-Because ``infer_mask2d = True``, the two-dimensional T mask is inferred from the bottom cell information in 
-``domcfg_eORCA1v2.2x.nc``.
-
-Because ``infer_mask3d = True``, the three-dimensional T mask is inferred from masked data in another file 
-(nemo_bu978o_1y_19771201-19781201_grid-T.nc  defined by ``infer_path``). The three-dimensional variable 'so'
-(defined by ``infer_varname``) is used to deduce the three-dimensional mask.
+In some cases, such as the :doc:`orcaexample`, the masks are not provided explicitly in the grid file but are applied to the data.
+In this case, the ``infer_mask2d`` and/or ``infer_mask3d`` keyword arguments will be needed.
 
 Variable names, coordinate names, and masking conventions can vary between NEMO datasets. To help with this, there
 are plenty of options to correctly load the grid data in the :doc:`api`.
@@ -79,7 +73,7 @@ routine
    
    from neutralNEMO.grid import build_nemo_hgrid
 
-   neutral_grid = build_nemo_hgrid(hgd, iperio=True, jperio=False, gridtype="orca")
+   neutral_grid = build_nemo_hgrid(hgd, iperio=False, jperio=False, gridtype="rectilinear")
 
 The last step before calculating our neutral surface is the loading of the temperature and salinity data.
 
@@ -90,23 +84,24 @@ Load T-S data
    
    from neutralNEMO.surf import load_tsdata
 
-   tsd = load_tsdata("nemo_bu978o_1y_19771201-19781201_grid-T.nc", zgd, to_varname="thetao")
+   tsd = load_tsdata("GYRE_1m_04110101_04201230_grid_T.nc", zgd, to_varname="votemper", so_varname="vosaline")
 
-As shown above, specific netcdf variable names can be specified as a keyword argument.
+As shown above, netcdf variable names can be specified as a keyword argument. In this case, ``votemper`` is the variable name
+for the potential temperature and ``vosaline`` is the practical salinity.
 
 Calculate surfaces
 --------------
 
-Now we have our temperature and grid information we can finally calculate our neutral surface. 
+Now we have our temperature and grid information we can calculate our neutral surfaces. 
 
 .. code-block:: Python
 
    from neutralNEMO.surf import find_omega_surfs
 
-   zpins = [150., 300.]   # List of depths to pin each surface to
+   zpins = [100., 200.]   # List of depths to pin each surface to
    ipins = [10, 10]       # List of i-indices to pin each surface to
-   jpins = [9, 9]         # List of j-indices to pin each surface to
-   tpins = [-1,-1]        # List of time indices to pin each surface to
+   jpins = [5, 5]         # List of j-indices to pin each surface to
+   tpins = [0, 0]        # List of time indices to pin each surface to
 
    surf_dataset = find_omega_surfs( tsd, neutral_grid , zgd, zpins, ipins, jpins, tpins,
                                          eos="gsw", ITER_MAX=10)
@@ -114,8 +109,8 @@ Now we have our temperature and grid information we can finally calculate our ne
    #Save as netcdf (optional)
    surf_dataset.to_netcdf("my_surfs.nc")
 
-In the above example, two neutral surfaces are calculated. The first surface is pinned to 150 m depth at (i=10,
-j=9) in the final time step. The second surface is the same but pinned to 300 m depth. The surfaces depths,
+In the above example, two neutral surfaces are calculated. The first surface is pinned to 100 m depth at (i=10,
+j=5) in the first time step. The second surface is the same but pinned to 200 m depth. The surfaces depths,
 temperatures, and salinities are outputted as an xarray DataSet and can be easilly saved to netcdf.
 
 To calculate the initial potential density, the equation of state needs to be known. In this case, the ``gsw`` 
@@ -124,12 +119,12 @@ equation of state is adopted (see neutralocean documentation for specifics on th
 ``ITER_MAX=10`` sets the maximum number of iterations carried out by the neutralocean algorithm.
 
 If you are interested in calculating the associated Veronis density for the surfaces you calculate then ``calc_veronis=True``
- enables the calculation of the Veronis density as a label for the density surfaces.
+enables the calculation of the Veronis density as a label for the density surfaces.
 
 .. code-block:: Python
 
-   ver_ipins = 15
-   ver_jpins = 150
+   ver_ipins = 10
+   ver_jpins = 10
 
    surf_dataset = find_omega_surfs( tsd, neutral_grid , zgd, zpins, ipins, jpins, tpins,
                                          eos="gsw", ITER_MAX=10, calc_veronis=True, 

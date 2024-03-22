@@ -12,7 +12,7 @@ differently to other grids.
 
 Example ORCA1 (1 degree equivalent) data can be downloaded from the following archive
 
-`Link to Zenodo archive <https://doi.org/10.1029/2020MS002436>`
+`Link to Zenodo archive <https://doi.org/10.5281/zenodo.10639898>`_
 
 You will need the following files
 
@@ -43,7 +43,7 @@ can vary between datasets and can be adjusted accordingly using keyword argument
 
 When loading the vertical grid data, we load cell thicknesses alongside the two-dimensional (y,x) and three-dimensional 
 (z,y,x) T point mask. Often the masks are not provided explicitly in the grid data but are applied to the data. This is the
-case for the example dataset ``domcfg_eORCA1v2.2x.nc`` so additional keyword arguments are needed. For example:
+case for the example dataset ``domcfg_eORCA1v2.2x.nc``, so additional keyword arguments are needed. For example:
 
 .. code-block:: Python
 
@@ -88,12 +88,12 @@ Load T-S data
 
    tsd = load_tsdata("nemo_bu978o_1y_19771201-19781201_grid-T.nc", zgd, to_varname="thetao")
 
-As shown above, specific netcdf variable names can be specified as a keyword argument.
+As shown above, netcdf variable names can be specified as a keyword argument.
 
 Calculate surfaces
 --------------
 
-Now we have our temperature and grid information we can finally calculate our neutral surface. 
+Now we have our temperature and grid information we can calculate our neutral surfaces. 
 
 .. code-block:: Python
 
@@ -120,7 +120,7 @@ equation of state is adopted (see neutralocean documentation for specifics on th
 ``ITER_MAX=10`` sets the maximum number of iterations carried out by the neutralocean algorithm.
 
 If you are interested in calculating the associated Veronis density for the surfaces you calculate then ``calc_veronis=True``
- enables the calculation of the Veronis density as a label for the density surfaces.
+enables the calculation of the Veronis density as a label for the density surfaces.
 
 .. code-block:: Python
 

@@ -11,7 +11,7 @@ The package contains routines to correctly load temperature and salinity data al
 A streamlined routine is also included to calculate an approximately neutral density surface (an omega surface) which is fixed to a specific 
 location in time and space. Additional options to calculate the Veronis density and potential density surfaces are also included.
 
-Take a look at the :doc:`usage` section to find out how to get started with neutralNEMO.
+Take a look at the :doc:`installation` page and examples of use (:doc:`orcaexample` and :doc:`rectexample`) to find out how to get started with neutralNEMO.
 
 .. note::
 
