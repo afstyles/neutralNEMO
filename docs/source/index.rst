@@ -27,5 +27,6 @@ Contents
 
 .. toctree::
 
-   usage
-   api
+   orcaexample
+   rectexample
+   examples
