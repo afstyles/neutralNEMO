@@ -7,7 +7,48 @@ def calc_seos(S, T, Z, rn_a0 = 1.655e-1, rn_b0 = 7.655e-1,
                rn_nu = 2.4341e-3, rn_lambda1 = 5.9520e-2, rn_lambda2 = 7.4914e-4,
                rn_mu1 = 1.4970e-4, rn_mu2 = 1.1090e-5 ):
     """
-    Calculates in-situ density using the simplified equation of state included in NEMO.
+    Calculates the insitu density of NEMO's simplified equation of state (seos)
+
+    Parameters
+    __________
+    S: float
+        Salinity variable
+        With seos, there is no distinction between Absolute and Practical Salinity
+
+    T: float
+        Temperature variable
+        With seos, there is no distinction between Conservative and Potential Temperature
+
+    Z: float
+        Depth in metres
+
+    rn_a0: float (optional, default = 1.655e-1)
+        seos parameter - Linear thermal expansion coefficient
+    
+    rn_b0: float (optional, default = 7.655e-1)
+        seos parameter - Linear haline expansion coefficient
+
+    rn_nu: float (optional, default = 2.4341e-3)
+        seos parameter - Cabbeling coefficient for T*S
+
+    rn_lambda1: float (optional, default = 5.9520e-2)
+        seos parameter - Cabbeling coefficient for T^2
+    
+    rn_lambda2: float (optional, default = 7.4914e-4)
+        seos parameter - Cabbeling coefficient for S^2
+
+    rn_mu1: float (optional, default = 1.4970e-4)
+        seos parameter - Thermobaric coefficient for T
+
+    rn_mu2: float (optional, default = 1.1090e-5)
+        seos parameter - Thermobaric coefficient for S
+
+        
+    Returns
+    __________
+
+    rho : float
+        The in-situ density [kg/m3]
     """
 
     rho_0 = 1026.
@@ -30,7 +71,49 @@ def calc_seos_s_t(S, T, Z, rn_a0 = 1.655e-1, rn_b0 = 7.655e-1,
                rn_nu = 2.4341e-3, rn_lambda1 = 5.9520e-2, rn_lambda2 = 7.4914e-4,
                rn_mu1 = 1.4970e-4, rn_mu2 = 1.1090e-5 ):
     """
-    Calculates the partial derivatives wrt T and S of the simplified equation of state in NEMO.
+    Calculates the partial derivatives wrt S and T for NEMO's simplified equation of state
+    (seos, in-situ density).
+
+    Parameters
+    __________
+    S: float
+        Salinity variable
+        With seos, there is no distinction between Absolute and Practical Salinity
+
+    T: float
+        Temperature variable
+        With seos, there is no distinction between Conservative and Potential Temperature
+
+    Z: float
+        Depth in metres
+
+    rn_a0: float (optional, default = 1.655e-1)
+        seos parameter - Linear thermal expansion coefficient
+    
+    rn_b0: float (optional, default = 7.655e-1)
+        seos parameter - Linear haline expansion coefficient
+
+    rn_nu: float (optional, default = 2.4341e-3)
+        seos parameter - Cabbeling coefficient for T*S
+
+    rn_lambda1: float (optional, default = 5.9520e-2)
+        seos parameter - Cabbeling coefficient for T^2
+    
+    rn_lambda2: float (optional, default = 7.4914e-4)
+        seos parameter - Cabbeling coefficient for S^2
+
+    rn_mu1: float (optional, default = 1.4970e-4)
+        seos parameter - Thermobaric coefficient for T
+
+    rn_mu2: float (optional, default = 1.1090e-5)
+        seos parameter - Thermobaric coefficient for S
+
+        
+    Returns
+    __________
+
+    beta, alpha : tuple
+        Tuple of floats describing the derivate wrt salinity (beta) and temperature (alpha)
     """
 
     rho_0 = 1026.
@@ -40,44 +123,53 @@ def calc_seos_s_t(S, T, Z, rn_a0 = 1.655e-1, rn_b0 = 7.655e-1,
     dT = T - T0
     dS = S - S0
 
-    rho_S  = + rn_b0 * ( 1 - rn_lambda2 * dS )  \
+    beta  = + rn_b0 * ( 1 - rn_lambda2 * dS )  \
             - rn_nu * dT \
             - rn_b0 * rn_mu2 * Z
 
-    rho_T = - rn_a0 * ( 1 + rn_lambda1 * dT )  \
+    alpha = - rn_a0 * ( 1 + rn_lambda1 * dT )  \
            - rn_nu * dS \
            - rn_a0 * rn_mu1 * Z
 
-    return rho_S, rho_T
-
-def neutral_seos( rn_a0 = 1.655e-1, rn_b0 = 7.655e-1,
-               rn_nu = 2.4341e-3, rn_lambda1 = 5.9520e-2, rn_lambda2 = 7.4914e-4,
-               rn_mu1 = 1.4970e-4, rn_mu2 = 1.1090e-5  ):
-
-    """
-    Create a description of NEMO's simplified equation of state, which is compatible with 
-    neutralocean
-    """
-
-    @nb.njit
-    def seos( S, T, Z ):
-        return calc_seos(S,T,Z, rn_a0 = rn_a0, rn_b0 = rn_b0,
-                               rn_nu = rn_nu, rn_lambda1 = rn_lambda1, rn_lambda2 = rn_lambda2,
-                               rn_mu1 = rn_mu1, rn_mu2 = rn_mu2)
-    @nb.njit
-    def seos_s_t( S, T, Z):
-        return calc_seos_s_t(S,T,Z, rn_a0 = rn_a0, rn_b0 = rn_b0,
-                               rn_nu = rn_nu, rn_lambda1 = rn_lambda1, rn_lambda2 = rn_lambda2,
-                               rn_mu1 = rn_mu1, rn_mu2 = rn_mu2)
-
-    eos = make_eos(seos)
-    eos_s_t = make_eos_s_t(seos_s_t)
-
-    return eos, eos_s_t
+    return beta, alpha
 
 
 @nb.njit
 def calc_eos(S, T, Z, eos_name):
+    """
+    Calculates the insitu density for either the TEOS10 or EOS80 equation of state.
+
+    Parameters
+    __________
+    S: float
+        Salinity variable
+        if eos_name = 'teos10' -> Use Absolute Salinity
+        if eos_name = 'eos80' -> Use Practical Salinity
+
+    T: float
+        Temperature variable
+        if eos_name = 'teos10' -> Use Conservative Temperature
+        if eos_name = 'eos80' -> Use Potential Temperature 
+
+    Z: float
+        Depth in metres
+
+    eos_name: String
+        Name of the desired equation of state in NEMO
+        = 'teos10' -> the polyTEOS-10-bsq equation of seawater (Roquet et al. 2015)
+        = 'eos80'  -> the polyEOS80-bsq equation of seawater
+
+        All equations use the default parameters used in the NEMO source code (as of v4.0.7).
+        Namelist parameters for the simplified equation of state can be set with the keyword arguments
+        below.
+
+        
+    Returns
+    __________
+
+    rho : float
+        The in-situ density [kg/m3]
+    """
 
     if eos_name == 'teos10':
         temp_type='conservative'
@@ -226,11 +318,48 @@ def calc_eos(S, T, Z, eos_name):
            + ((((EOS510*zs+EOS410)*zs+EOS310)*zs+EOS210)*zs+EOS110)*zs+EOS010)*zt   \
            + (((((EOS600*zs+EOS500)*zs+EOS400)*zs+EOS300)*zs+EOS200)*zs+EOS100)*zs+EOS000
 
-    zn  = ( ( zn3 * zh + zn2 ) * zh + zn1 ) * zh + zn0
+    rho  = ( ( zn3 * zh + zn2 ) * zh + zn1 ) * zh + zn0
 
-    return zn
+    return rho
 
+@nb.njit
 def calc_eos_s_t(S, T, Z, eos_name):
+
+    """
+    Calculates the partial derivatives wrt S and T for either the TEOS10 or EOS80 equation of state 
+    (in-situ density).
+
+    Parameters
+    __________
+    S: float
+        Salinity variable
+        if eos_name = 'teos10' -> Use Absolute Salinity
+        if eos_name = 'eos80' -> Use Practical Salinity
+
+    T: float
+        Temperature variable
+        if eos_name = 'teos10' -> Use Conservative Temperature
+        if eos_name = 'eos80' -> Use Potential Temperature 
+
+    Z: float
+        Depth in metres
+
+    eos_name: String
+        Name of the desired equation of state in NEMO
+        = 'teos10' -> the polyTEOS-10-bsq equation of seawater (Roquet et al. 2015)
+        = 'eos80'  -> the polyEOS80-bsq equation of seawater
+
+        All equations use the default parameters used in the NEMO source code (as of v4.0.7).
+        Namelist parameters for the simplified equation of state can be set with the keyword arguments
+        below.
+
+        
+    Returns
+    __________
+
+    beta, alpha : tuple
+        Tuple of floats describing the derivate wrt salinity (beta) and temperature (alpha)
+    """
 
     if eos_name == 'teos10':
         rdeltaS = 32.
@@ -434,3 +563,94 @@ def calc_eos_s_t(S, T, Z, eos_name):
     beta = zn / zs
 
     return beta, alpha
+
+
+def NEMO_eos( eos_name, rn_a0 = 1.655e-1, rn_b0 = 7.655e-1,
+               rn_nu = 2.4341e-3, rn_lambda1 = 5.9520e-2, rn_lambda2 = 7.4914e-4,
+               rn_mu1 = 1.4970e-4, rn_mu2 = 1.1090e-5  ):
+
+    """
+    Create a description of NEMO's equation of state (TEOS10, EOS80, or SEOS), which is compatible with 
+    neutralocean.
+
+    Parameters
+    __________
+
+    eos_name: String
+        Name of the desired equation of state in NEMO
+        = 'teos10' -> the polyTEOS-10-bsq equation of seawater (Roquet et al. 2015)
+        = 'eos80'  -> the polyEOS80-bsq equation of seawater
+        = 'seos'   -> A simplified equation of state inspired by Vallis (2006)
+
+        All equations use the default parameters used in the NEMO source code (as of v4.0.7).
+        Namelist parameters for the simplified equation of state can be set with the keyword arguments
+        below.
+
+        For a linear equation of state, only rn_a0 and rn_b0 should be non-zero (not default behaviour)
+
+    rn_a0: float (optional, default = 1.655e-1)
+        Only used if eos_name = 'seos'
+        seos parameter - Linear thermal expansion coefficient
+    
+    rn_b0: float (optional, default = 7.655e-1)
+        Only used if eos_name = 'seos'
+        seos parameter - Linear haline expansion coefficient
+
+    rn_nu: float (optional, default = 2.4341e-3)
+        Only used if eos_name = 'seos'
+        seos parameter - Cabbeling coefficient for T*S
+
+    rn_lambda1: float (optional, default = 5.9520e-2)
+        Only used if eos_name = 'seos'
+        seos parameter - Cabbeling coefficient for T^2
+    
+    rn_lambda2: float (optional, default = 7.4914e-4)
+        Only used if eos_name = 'seos'
+        seos parameter - Cabbeling coefficient for S^2
+
+    rn_mu1: float (optional, default = 1.4970e-4)
+        Only used if eos_name = 'seos'
+        seos parameter - Thermobaric coefficient for T
+
+    rn_mu2: float (optional, default = 1.1090e-5)
+        Only used if eos_name = 'seos'
+        seos parameter - Thermobaric coefficient for S
+
+        
+    Returns
+    __________
+
+    ( eos, eos_s_t ): tuple
+        Tuple of functions describing the insitu density (eos) and it's partial derivatives wrt
+        temperature and salinity. These functions are compatible with neutralocean functions.
+
+    """
+
+    if eos_name in ['teos10', 'eos80']:
+        @nb.njit
+        def eos( S, T, Z ):
+            return calc_eos(S,T,Z,eos_name)
+        @nb.njit
+        def eos_s_t( S, T, Z):
+            return calc_eos_s_t(S,T,Z,eos_name)
+    elif eos_name == 'seos':
+        @nb.njit
+        def eos( S, T, Z ):
+            return calc_seos(S,T,Z, rn_a0 = rn_a0, rn_b0 = rn_b0,
+                                rn_nu = rn_nu, rn_lambda1 = rn_lambda1, rn_lambda2 = rn_lambda2,
+                                rn_mu1 = rn_mu1, rn_mu2 = rn_mu2)
+        @nb.njit
+        def eos_s_t( S, T, Z):
+            return calc_seos_s_t(S,T,Z, rn_a0 = rn_a0, rn_b0 = rn_b0,
+                                rn_nu = rn_nu, rn_lambda1 = rn_lambda1, rn_lambda2 = rn_lambda2,
+                                rn_mu1 = rn_mu1, rn_mu2 = rn_mu2)
+
+    else:
+        print(">>> Unknown equation of state <<<")
+        print("Current options are teos10, eos80, and seos")
+        return None
+
+    eos = make_eos(eos)
+    eos_s_t = make_eos_s_t(eos_s_t)
+
+    return eos, eos_s_t
