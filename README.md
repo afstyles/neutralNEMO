@@ -1,4 +1,4 @@
-# neutralNEMO (v0.9.4, early release)
+# neutralNEMO (v1.0.0)
 
 Calculate neutral surfaces for NEMO ([Madec et al., 2019](https://zenodo.org/doi/10.5281/zenodo.1464816)) model runs using neutralNEMO!
 
@@ -24,7 +24,7 @@ pip install neutralNEMO
 
 # The future of neutralNEMO
 
-This is currently an early release of neutralNEMO and I am keen to here how others get on with the package when they use it on their model runs.  If it works well for you, please spread the word and let me know as it will make my day! If you do encounter any problems, please contact me or raise an issue, I will try to help in any way I can.
+I am keen to here how others get on with the package when they use it on their model runs.  If it works well for you, please spread the word and let me know as it will make my day! If you do encounter any problems, please contact me or raise an issue, I will try to help in any way I can.
 
 # Documentation
 Documentation and examples can be found at [https://neutralnemo.readthedocs.io](https://neutralnemo.readthedocs.io)
