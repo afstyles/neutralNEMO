@@ -12,7 +12,7 @@ Surface Calculation
 
 .. autofunction:: surf.find_omega_surfs
 
-Grid interpretation
+Grid Interpretation
 -------------------
 
 .. autofunction:: grid.build_nemo_hgrid
@@ -20,4 +20,17 @@ Grid interpretation
 .. autofunction:: grid.load_hgriddata
 
 .. autofunction:: grid.load_zgriddata
+
+Equation of State
+-------------------
+
+.. autofunction:: eos.NEMO_eos
+
+.. autofunction:: eos.calc_seos
+
+.. autofunction:: calc_seos_s_t
+
+.. autofunction:: calc_eos
+
+.. autofunction:: calc_eos_s_t
 
