@@ -93,7 +93,7 @@ def load_tsdata( path, zgriddata, to_varname="to", so_varname="so", vert_dim="de
     
 
 def find_omega_surfs( tsdata, neutralgrid, zgriddata, 
-                     zpins, ipins, jpins, tpins, eos="gsw" ,
+                     zpins, ipins, jpins, tpins, eos="gsw" , eos_type="specvol",
                      ITER_MAX=10, 
                      calc_veronis=True, calc_potsurf=True,
                      ver_ipins=None, ver_jpins=None,
@@ -200,6 +200,12 @@ def find_omega_surfs( tsdata, neutralgrid, zgriddata,
         `@numba.njit` decorated and need not be vectorized -- it will be called
         many times with scalar inputs.
 
+    EOS_TYPE: String
+        String describing the quantity returned by the equation of state. The
+        options are
+
+        'specvol' : Specific volume used by gsw
+        'insitu' : In-situ density 
 
     ITER_MAX: Integer (option, default=10)
         Maximum number of iterations for omega surface calculation.
@@ -259,7 +265,7 @@ def find_omega_surfs( tsdata, neutralgrid, zgriddata,
 
     for zpin, ipin, jpin, tpin, n in zip(zpins, ipins, jpins, tpins, range(len(zpins))):
 
-        shared_attrs = {"ipin":ipins, "jpin":jpins, "pot_ref": pot_ref, "eos":eos}
+        shared_attrs = {"ipin":ipins, "jpin":jpins, "pot_ref": pot_ref, }#"eos":eos}
 
         if calc_veronis==True:
 
@@ -279,11 +285,13 @@ def find_omega_surfs( tsdata, neutralgrid, zgriddata,
 
 
 
-
-            rho_ver = 1/veronis_density(tsdata["so"].to_numpy()[tpin,:,ver_jpin,ver_ipin],
+            
+            rho_ver = veronis_density(tsdata["so"].to_numpy()[tpin,:,ver_jpin,ver_ipin],
                                         tsdata["to"].to_numpy()[tpin,:,ver_jpin,ver_ipin],
                                         zgriddata["deptht"].where(zgriddata["tmask3d"]).to_numpy()[:,ver_jpin,ver_ipin],
                                         float(zpin), eos=eos, p_ref=ver_ref)
+
+            if eos_type == 'specvol': rho_ver = 1/rho_ver
 
 
         if calc_potsurf==True:
@@ -294,7 +302,8 @@ def find_omega_surfs( tsdata, neutralgrid, zgriddata,
                                     ref=pot_ref, pin_cast=(jpin,ipin), 
                                     pin_p=float(zpin), eos=eos )
             
-            rho_pot = 1/d["isoval"] #Potential density value
+            rho_pot = d["isoval"]
+            if eos_type == 'specvol' : rho_pot = 1/rho_pot
 
             #Prepare depth data in DataArray
             surf_z = xr.DataArray(data=z, dims=["y","x"], name="potsurf_z",
