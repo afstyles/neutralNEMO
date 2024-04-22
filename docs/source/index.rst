@@ -17,7 +17,7 @@ Take a look at the :doc:`installation` page and examples of use (:doc:`orcaexamp
 
    This project is under active development. 
    
-   neutralNEMO is at an early stage of development and I am keen to here how others get on with the 
+   I am keen to here how others get on with the 
    library when they use it on their model runs. If it works well for you, please spread the word and
    let me know as it will make my day! If you do encounter any problems, please contact me or raise
    an issue on GitHub, I will try to help in any way I can.

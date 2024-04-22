@@ -90,6 +90,35 @@ Load T-S data
 As shown above, netcdf variable names can be specified as a keyword argument. In this case, ``votemper`` is the variable name
 for the potential temperature and ``vosaline`` is the practical salinity.
 
+Define the equation of state
+--------------
+
+We also need to define the equation of state used in the NEMO simulation. The default equations 
+of state used in NEMO are described in ``neutralNEMO.eos`` and can be called here. In this case, we
+configure the simplified equation of state (S-EOS) to describe a linear equation of state using the 
+same parameters found in the NEMO namelist.
+
+.. code-block:: Python
+
+   from neutralNEMO.eos import NEMO_eos
+
+   eos = NEMO_eos( 'seos' , rn_a0 = 1.655e-1, rn_b0 = 7.655e-1,
+                    rn_nu = 0., rn_lambda1 = 0., rn_lambda2 = 0.,
+                    rn_mu1 = 0., rn_mu2 = 0. )
+
+If we wished to use the TEOS10 equation of state (and it matched the NEMO simulation) we would simply 
+do the following instead
+
+.. code-block:: Python
+
+   eos = NEMO_eos( 'teos10' )
+
+We also have the option to use EOS80. An example of this
+can be found in the :doc:`orcaexample`.
+
+If you have used a non-standard equation of state then you will need to define the equation and its gradients 
+with respect to T and S. Details on how to do this can be found in the `neutralocean documentation <https://neutralocean.readthedocs.io/en/latest/internals.html#equation-of-state>`_ .
+
 Calculate surfaces
 --------------
 
@@ -105,7 +134,7 @@ Now we have our temperature and grid information we can calculate our neutral su
    tpins = [0, 0]        # List of time indices to pin each surface to
 
    surf_dataset = find_omega_surfs( tsd, neutral_grid , zgd, zpins, ipins, jpins, tpins,
-                                         eos="gsw", ITER_MAX=10)
+                                         eos=eos, ITER_MAX=10)
 
    #Save as netcdf (optional)
    surf_dataset.to_netcdf("my_surfs.nc")
@@ -113,9 +142,6 @@ Now we have our temperature and grid information we can calculate our neutral su
 In the above example, two neutral surfaces are calculated. The first surface is pinned to 100 m depth at (i=10,
 j=5) in the first time step. The second surface is the same but pinned to 200 m depth. The surfaces depths,
 temperatures, and salinities are outputted as an xarray DataSet and can be easilly saved to netcdf.
-
-To calculate the initial potential density, the equation of state needs to be known. In this case, the ``gsw`` 
-equation of state is adopted (see neutralocean documentation for specifics on the equation of state.)
 
 ``ITER_MAX=10`` sets the maximum number of iterations carried out by the neutralocean algorithm.
 
@@ -128,7 +154,7 @@ enables the calculation of the Veronis density as a label for the density surfac
    ver_jpins = 10
 
    surf_dataset = find_omega_surfs( tsd, neutral_grid , zgd, zpins, ipins, jpins, tpins,
-                                         eos="gsw", ITER_MAX=10, calc_veronis=True, 
+                                         eos=eos, ITER_MAX=10, calc_veronis=True, 
                                          ver_ipins=ver_ipins, ver_jpins=ver_jpins)
 
 If you want the calculated Veronis densities to be consistent between surfaces at a given time step, the Veronis density should be
