@@ -28,9 +28,9 @@ Equation of State
 
 .. autofunction:: eos.calc_seos
 
-.. autofunction:: calc_seos_s_t
+.. autofunction:: eos.calc_seos_s_t
 
-.. autofunction:: calc_eos
+.. autofunction:: eos.calc_eos
 
-.. autofunction:: calc_eos_s_t
+.. autofunction:: eos.calc_eos_s_t
 
