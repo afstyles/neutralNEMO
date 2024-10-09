@@ -1,8 +1,10 @@
 import xarray as xr
+import copy
 import numpy as np
 from neutralocean.label import veronis_density
 from neutralocean.surface.isopycnal import potential_surf
 from neutralocean.surface import omega_surf
+from neutralocean.traj import neutral_trajectory
 
 def load_tsdata( path, zgriddata, to_varname="to", so_varname="so", vert_dim="deptht",
                  i_dim="x", j_dim="y", open_mf=False, **kwargs):
@@ -374,3 +376,79 @@ def find_omega_surfs( tsdata, neutralgrid, zgriddata,
 
 
     return surf_dataset
+
+def find_evolving_omega_surfs( tsdata, neutralgrid, zgriddata, 
+                               zpins, ipins, jpins, tpins, calc_veronis=True, calc_potsurf=True, itmin = None, itmax = None,
+                               **kwargs ):
+
+    nt = len(tsdata['to']['time_counter'])
+    if itmin is None: itmin = 0
+    if itmax is None: itmax = nt-1
+
+
+    # Calculate the pinned surfaces first (t=tpin)
+    surf_pin = find_omega_surfs( tsdata, neutralgrid , zgriddata, zpins, ipins, jpins, tpins, 
+                                        calc_veronis=calc_veronis, calc_potsurf=calc_potsurf, **kwargs)
+
+    if (calc_veronis == True) or (calc_potsurf == True):
+        rho_dimname = [x for x in surf_pin.dims if 'rho_' in x][0]
+        surf_pin = surf_pin.swap_dims({rho_dimname:'surfno'})
+
+
+    n_S = []
+    n_T = []
+    n_Z = []
+    for zpin, ipin, jpin, tpin, n in zip(zpins, ipins, jpins, tpins, range(len(zpins))):
+
+        # Define the Temp, Sal, and Depth (Pressure) cast
+        castT = tsdata['to'].isel(x=ipin, y=jpin)
+        castS = tsdata['so'].isel(x=ipin, y=jpin)
+        castZ = zgriddata['deptht'].where(zgriddata['tmask3d']).isel(x=ipin, y=jpin)
+
+        # Find the neutral trajectory AFTER (and including) the time pin
+        castT_after = castT.isel(time_counter=np.arange(tpin,nt,1,dtype=int))
+        castS_after = castS.isel(time_counter=np.arange(tpin,nt,1,dtype=int))
+        castZ_after = castZ.broadcast_like(castT_after)
+
+        n_after = neutral_trajectory(S=castS_after, T=castT_after, P=castZ_after, p0=float(zpin), vert_dim='z_t')
+
+        # Find the neutral trajectory BEFORE (and including) the time pin
+        castT_before = castT.isel(time_counter=np.arange(tpin,-1,-1,dtype=int))
+        castS_before = castS.isel(time_counter=np.arange(tpin,-1,-1,dtype=int))
+        castZ_before = castZ.broadcast_like(castT_before)
+
+        n_before = neutral_trajectory(S=castS_before, T=castT_before, P=castZ_before, p0=float(zpin), vert_dim='z_t')
+
+        # Combine the before and after trajectories to provide a full time series of T, S, and Z
+        # n_S = n_S + [np.append(n_before[0][::-1], n_after[0][1:])]
+        # n_T = n_T + [np.append(n_before[1][::-1], n_after[1][1:])]
+        n_Z = n_Z + [np.append(n_before[2][::-1], n_after[2][1:])]
+
+    n_Z = np.array(n_Z)
+
+    for it in range(itmin, itmax+1):
+
+        time_value = list(tsdata["to"]["time_counter"].isel(time_counter=[it]).values)
+        zpins_it = list(n_Z[:,it])
+        tpins_it = [it]*len(zpins_it)
+
+        if it != tpin:
+            surf_tmp = find_omega_surfs( tsdata, neutralgrid , zgriddata, zpins_it, ipins, jpins, tpins_it , 
+                                            calc_veronis=False, calc_potsurf=calc_potsurf, **kwargs)
+            
+            if calc_potsurf == True: 
+                surf_tmp = surf_tmp.drop_vars(['rho_pot'])
+                surf_tmp = surf_tmp.swap_dims({'rho_pot':'surfno'})
+
+        else:
+            surf_tmp = copy.deepcopy( surf_pin )
+
+        surf_tmp = surf_tmp.expand_dims( {'time_counter':time_value})
+
+        if it == itmin:
+            surf_out = copy.deepcopy(surf_tmp)
+        else:
+            surf_out  = xr.concat((surf_out, surf_tmp), 'time_counter', compat='override', coords='minimal')
+
+
+    return surf_out, surf_pin
