@@ -89,7 +89,7 @@ def load_tsdata( path, zgriddata, to_varname="to", so_varname="so", vert_dim="de
     try:
         tsdata["so"] = dataset[so_varname].where(zgriddata["tmask3d"],np.nan)
     except:
-        print("Variable {} not found in: {}".format(to_varname, path))
+        print("Variable {} not found in: {}".format(so_varname, path))
 
     return tsdata
     
@@ -381,6 +381,107 @@ def find_evolving_omega_surfs( tsdata, neutralgrid, zgriddata,
                                zpins, ipins, jpins, tpins, calc_veronis=True, calc_potsurf=True, itmin = None, itmax = None,
                                **kwargs ):
 
+    """
+    Calculate time-evolving omega surfaces which intersect specific grid points
+    at specific times
+    There are options to also calculate the veronis density and/or the
+    intersecting potential density surfaces for labelling or reference.
+
+    Parameters
+    __________
+
+    tsdata: Dictionary
+        Can be generated using `load_tsdata`,
+        Must contain the following information about the ocean temperature and salinity.
+
+            tsdata["to"]: DataArray (time, z_t, y, x)
+            Potential or conservative temperature (depending on the equation of state, 
+            see `eos` argument)
+
+            tsdata["so"]: DataArray (time, z_t, y, x)
+            Practical or absolute salinity (depending on the equation of state, 
+            see `eos` argument)
+
+    neutralgrid: Dictionary
+        (Description below from NeutralOcean documentation)
+        Can be generated using `build_nemo_hgrid`
+        Must contain the following:
+
+            edges : tuple of length 2
+                Each element is an array of int of length `E`, where `E` is the number of
+                edges in the grid's graph, i.e. the number of pairs of adjacent water
+                columns (including land) in the grid.
+                If `edges = (a, b)`, the nodes (water columns) whose linear indices are
+                `a[i]` and `b[i]` are adjacent.
+
+            dist : 1d array
+                Horizontal distance between adjacent water columns (nodes).
+                `dist[i]` is the distance between nodes whose linear indices are
+                `edges[0][i]` and `edges[1][i]`.
+
+            distperp : 1d array
+                Horizontal distance of the face between adjacent water columns (nodes).
+                `distperp[i]` is the distance of the interface between nodes whose
+                linear indices are `edges[0][i]` and `edges[1][i]`.
+
+
+    zgriddata: Dictionary
+        Can be generated using `load_zgriddata`
+        Must contain the following information about the vertical C-grid 
+        discretization
+
+            hgriddata["deptht"]: DataArray (z_t, y, x)
+            Depth of the T-points 
+
+
+    zpins: List of floats
+        Depths of the fixed points
+
+    ipins: List of integers
+        i-indices of the fixed point
+
+    jpins: List of integers
+        j-indices of the fixed point
+
+    tpins: List of integers
+        time indices of the fixed point
+        All time indices in tpins must lie between itmin and itmax 
+        if they're specified
+    
+    calc_veronis: Logical (default=True)
+        Calculate the Veronis density of each surface at their respective
+        fixed location in time and space
+
+    calc_potsurf: Logical (default=True)
+        Calculate the potential density surface which intersects the fixed point
+        location in space and time. If you set ITER_MAX=0 while calc_potsurf=True,
+        only potential density surfaces will be calculated.   
+
+    itmin: Integer or None
+        itmin = None -> itmin will be set to the minimum time index
+        itmin = Integer -> The surface will not be calculated for time indices
+                           lower than itmin. 
+
+    itmax: Integer or None
+        itmax = None -> itmax will be set to the maximum time index
+        itmax = Integer -> The surface will not be calculated for time indices
+                           greater than itmax. 
+
+    kwargs:
+        Additional keyword arguments for `find_omega_surfs`
+        This includes keyword arguments for the equation of state and the number
+        of iterations in the omega surface calculation
+
+            
+    Returns
+    __________
+
+    surf_out, surf_pin: Tuple containing the two following datasetsDataset containing all of the surfaces requested.
+        surf_out: Dataset containing all of the time-evolving surfaces requested
+        surf_pin: Dataset containing the surfaces at the time they are pinned (t=tpin)
+
+    """
+    
     nt = len(tsdata['to']['time_counter'])
     if itmin is None: itmin = 0
     if itmax is None: itmax = nt-1
