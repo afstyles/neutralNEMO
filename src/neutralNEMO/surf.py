@@ -259,7 +259,8 @@ def find_omega_surfs( tsdata, neutralgrid, zgriddata,
     Returns
     __________
 
-    surf_dataset: Dataset containing all of the surfaces requested.
+    surf_dataset: 
+        Dataset containing all of the surfaces requested.
 
     """
     
