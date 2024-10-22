@@ -259,7 +259,7 @@ def find_omega_surfs( tsdata, neutralgrid, zgriddata,
     Returns
     __________
 
-    surf_dataset: 
+    surf_dataset: Dataset
         Dataset containing all of the surfaces requested.
 
     """
@@ -477,10 +477,10 @@ def find_evolving_omega_surfs( tsdata, neutralgrid, zgriddata,
     Returns
     __________
 
-    surf_out: 
+    surf_out: Dataset
         Dataset containing all of the time-evolving surfaces requested
     
-    surf_pin: 
+    surf_pin: Dataset
         Dataset containing the surfaces at the time they are pinned (t=tpin)
 
     """
