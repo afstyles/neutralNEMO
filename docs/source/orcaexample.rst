@@ -139,8 +139,8 @@ Now we have our temperature and grid information we can calculate neutral surfac
    surf_dataset.to_netcdf("my_surfs.nc")
 
 In the above example, two neutral surfaces are calculated. The first surface is pinned to 150 m depth at (i=10,
-j=9) in the final time step. The second surface is the same but pinned to 300 m depth. The surfaces depths,
-temperatures, and salinities are outputted as an xarray DataSet and can be easilly saved to netcdf.
+j=9) in the final time step. The second surface is the same but pinned to 300 m depth. The depth, temperature, and
+salinity of the surfaces are outputted as an xarray DataSet and can be easilly saved to netcdf.
 
 ``ITER_MAX=10`` sets the maximum number of iterations carried out by the neutralocean algorithm.
 
@@ -184,7 +184,7 @@ You will notice that we still need time indices to pin the surface. As before th
 j=9) in the final time step but is free to evolve at any other time. The values in ``tpins`` can be any valid time index for the data found in ``tsd``.
 
 Two datasets are calculated in the above code: 
-``surf_dataset`` contains the time-dependent surface's temperature, salinity, and depth.
-``surf_pin`` contains the pinned surfaces (i.e. the time-dependent surfaces evaluated at the time of pinning).
+``surf_dataset`` contains the temperature, salinity, and depth of the time-dependent surfaces.
+``surf_pin`` contains the temperature, salinity, and depth of the surfaces at the time of pinning.
 
 ``find_evolving_omega_surfs`` can accept any keyword argument for ``find_omega_surfs``.
