@@ -122,7 +122,7 @@ with respect to T and S. Details on how to do this can be found in the `neutralo
 Calculate time-independent surfaces
 --------------
 
-Now we have our temperature and grid information we can calculate our neutral surfaces. 
+Now we have our temperature and grid information we can calculate our neutral surfaces for given moments in time. 
 
 .. code-block:: Python
 
