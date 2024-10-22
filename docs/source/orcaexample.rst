@@ -163,7 +163,7 @@ calculate at the same point for all surfaces. In this case, the Veronis density 
 Calculate time-dependent surfaces
 --------------
 
-If we want to calculate time-dependent surfaces we need to use a different function `find_evolving_omega_surfs`.
+If we want to calculate time-dependent surfaces we need to use a different function ``find_evolving_omega_surfs``.
 
 .. code-block:: Python
 
@@ -181,10 +181,10 @@ If we want to calculate time-dependent surfaces we need to use a different funct
    surf_dataset.to_netcdf("my_evolving_surfs.nc")
 
 You will notice that we still need time indices to pin the surface. As before the first surface is pinned to 150 m depth at (i=10,
-j=9) in the final time step but is free to evolve at any other time. The values in `tpins` can be any valid time index for the data found in `tsd`.
+j=9) in the final time step but is free to evolve at any other time. The values in ``tpins`` can be any valid time index for the data found in ``tsd``.
 
 Two datasets are calculated in the above code: 
-`surf_dataset` contains the time-dependent surface's temperature, salinity, and depth.
-`surf_pin` contains the pinned surfaces (i.e. the time-dependent surfaces evaluated at the time of pinning).
+``surf_dataset`` contains the time-dependent surface's temperature, salinity, and depth.
+``surf_pin`` contains the pinned surfaces (i.e. the time-dependent surfaces evaluated at the time of pinning).
 
-`find_evolving_omega_surfs` can accept any keyword argument for `find_omega_surfs`.
+``find_evolving_omega_surfs`` can accept any keyword argument for ``find_omega_surfs``.
