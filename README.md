@@ -1,4 +1,4 @@
-# neutralNEMO (v1.0.0)
+# neutralNEMO
 
 Calculate neutral surfaces for NEMO ([Madec et al., 2019](https://zenodo.org/doi/10.5281/zenodo.1464816)) model runs using neutralNEMO!
 
