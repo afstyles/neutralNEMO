@@ -252,7 +252,7 @@ def load_zgriddata( path, deptht_varname="gdept_0", tmask3d_varname="tmask", tma
     infer_tmask2d: Logical (optional, default = False)
         infer_tmask2d = False -> Load the two-dimensional T mask from the file
                                  using the variable name defined by tmask2d_varname
-                        True  -> Deduce the two-dimensional T mask from the bottom 
+        infer_tmask2d = True  -> Deduce the two-dimensional T mask from the bottom 
                                  level variable in the file. The bottom level variable
                                  name is defined by blev_varname
 
@@ -263,7 +263,7 @@ def load_zgriddata( path, deptht_varname="gdept_0", tmask3d_varname="tmask", tma
     infer_tmask3d: Logical (optional, default = False)
         infer_tmask3d = False -> Load the three-dimensional T mask from the file
                                  using the variable name defined by tmask3d_varname
-                        True  -> Deduced the three-dimensional T mask from a file
+        infer_tmask3d = True  -> Deduced the three-dimensional T mask from a file
                                  defined by infer_path (infer_path can equal path), using
                                  the variable name defined by infer_varname. The dimension
                                  names for the variable are defined by infer_tdim, infer_idim,
@@ -272,9 +272,9 @@ def load_zgriddata( path, deptht_varname="gdept_0", tmask3d_varname="tmask", tma
 
     infer_val: String or Float (optional, default = None)
         Only used if infer_tmask3d == True
-        infer_val = None -> The three-dimensional T mask is deduced from the infer variable by
-                            identifying null values (e.g. Nan).
-                  = Float -> The three-dimensional T mask is deduced from the infer variable by
+        infer_val = None  -> The three-dimensional T mask is deduced from the infer variable by
+                             identifying null values (e.g. Nan).
+        infer_val = Float -> The three-dimensional T mask is deduced from the infer variable by
                              finding occurences of infer_val. Where the infer variable == infer_val,
                              tmask3d = False.
 
