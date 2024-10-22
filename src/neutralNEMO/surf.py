@@ -202,7 +202,7 @@ def find_omega_surfs( tsdata, neutralgrid, zgriddata,
         `@numba.njit` decorated and need not be vectorized -- it will be called
         many times with scalar inputs.
 
-    EOS_TYPE: String
+    eos_type: String
         String describing the quantity returned by the equation of state. The
         options are
 

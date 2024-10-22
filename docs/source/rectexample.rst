@@ -119,7 +119,7 @@ can be found in the :doc:`orcaexample`.
 If you have used a non-standard equation of state then you will need to define the equation and its gradients 
 with respect to T and S. Details on how to do this can be found in the `neutralocean documentation <https://neutralocean.readthedocs.io/en/latest/internals.html#equation-of-state>`_ .
 
-Calculate surfaces
+Calculate time-independent surfaces
 --------------
 
 Now we have our temperature and grid information we can calculate our neutral surfaces. 
@@ -131,10 +131,10 @@ Now we have our temperature and grid information we can calculate our neutral su
    zpins = [100., 200.]   # List of depths to pin each surface to
    ipins = [10, 10]       # List of i-indices to pin each surface to
    jpins = [5, 5]         # List of j-indices to pin each surface to
-   tpins = [0, 0]        # List of time indices to pin each surface to
+   tpins = [0, 0]         # List of time indices to pin each surface to
 
    surf_dataset = find_omega_surfs( tsd, neutral_grid , zgd, zpins, ipins, jpins, tpins,
-                                         eos=eos, ITER_MAX=10)
+                                         eos=eos, eos_type='insitu', ITER_MAX=10)
 
    #Save as netcdf (optional)
    surf_dataset.to_netcdf("my_surfs.nc")
@@ -154,8 +154,37 @@ enables the calculation of the Veronis density as a label for the density surfac
    ver_jpins = 10
 
    surf_dataset = find_omega_surfs( tsd, neutral_grid , zgd, zpins, ipins, jpins, tpins,
-                                         eos=eos, ITER_MAX=10, calc_veronis=True, 
+                                         eos=eos, eos_type='insitu', ITER_MAX=10, calc_veronis=True, 
                                          ver_ipins=ver_ipins, ver_jpins=ver_jpins)
 
 If you want the calculated Veronis densities to be consistent between surfaces at a given time step, the Veronis density should be
 calculate at the same point for all surfaces. In this case, the Veronis density is calculated at (i=15,j=150).
+
+Calculate time-dependent surfaces
+--------------
+
+If we want to calculate time-dependent surfaces we need to use a different function `find_evolving_omega_surfs`.
+
+.. code-block:: Python
+
+   from neutralNEMO.surf import find_evolving_omega_surfs
+
+   zpins = [100., 200.]   # List of depths to pin each surface to
+   ipins = [10, 10]       # List of i-indices to pin each surface to
+   jpins = [5, 5]         # List of j-indices to pin each surface to
+   tpins = [0, 0]         # List of time indices to pin each surface to
+
+   surf_dataset, surf_pin = find_evolving_omega_surfs( tsd, neutral_grid , zgd, zpins, ipins, jpins, tpins,
+                                                            eos=eos, eos_type='insitu', ITER_MAX=10 )
+
+   #Save as netcdf (optional)
+   surf_dataset.to_netcdf("my_evolving_surfs.nc")
+
+You will notice that we still need time indices to pin the surface. As before the first surface is pinned to 100 m depth at (i=10,
+j=5) in the first time step but is free to evolve at any other time. The values in `tpins` can be any valid time index for the data found in `tsd`.
+
+Two datasets are calculated in the above code: 
+`surf_dataset` contains the time-dependent surface's temperature, salinity, and depth.
+`surf_pin` contains the pinned surfaces (i.e. the time-dependent surfaces evaluated at the time of pinning).
+
+`find_evolving_omega_surfs` can accept any keyword argument for `find_omega_surfs`.
