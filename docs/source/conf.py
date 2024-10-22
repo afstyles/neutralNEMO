@@ -10,8 +10,8 @@ project = 'neutralNEMO'
 copyright = '2023, Andrew Styles'
 author = 'Andrew Styles'
 
-release = '0.9'
-version = '0.9.0'
+release = '1.1'
+version = '1.1.0'
 
 # -- General configuration
 

@@ -12,6 +12,8 @@ Surface Calculation
 
 .. autofunction:: surf.find_omega_surfs
 
+.. autofunction:: surf.find_evolving_omega_surfs
+
 Grid Interpretation
 -------------------
 
