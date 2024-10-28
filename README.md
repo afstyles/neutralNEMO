@@ -1,4 +1,5 @@
-# neutralNEMO
+# neutralNEMO 
+[![Anaconda-Server Badge](https://anaconda.org/conda-forge/neutralnemo/badges/downloads.svg)](https://anaconda.org/conda-forge/neutralnemo)
 
 Calculate neutral surfaces for NEMO ([Madec et al., 2019](https://zenodo.org/doi/10.5281/zenodo.1464816)) model runs using neutralNEMO!
 
