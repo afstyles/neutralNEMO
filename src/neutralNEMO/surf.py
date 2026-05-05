@@ -7,7 +7,7 @@ from neutralocean.surface import omega_surf
 from neutralocean.traj import neutral_trajectory
 
 def load_tsdata( path, zgriddata, to_varname="to", so_varname="so", vert_dim="deptht",
-                 i_dim="x", j_dim="y", open_mf=False, **kwargs):
+                 i_dim="x", j_dim="y", time_dim="time_counter", open_mf=False, **kwargs):
     
     """
     Create tsdata dictionary by loading from a standard NEMO output (typical a *grid-T.nc file)
@@ -52,6 +52,11 @@ def load_tsdata( path, zgriddata, to_varname="to", so_varname="so", vert_dim="de
         Dimension name for the j axis. 
         Can be found using `ncdump -h your_file.nc`
 
+    time_dim: String (optional, default = "time_counter")
+        Dimension name for the time axis
+        Can be found using ncdump -h `your_file.nc`
+        Set to None if data has no time coordinate
+
         
     Returns
     __________
@@ -78,6 +83,8 @@ def load_tsdata( path, zgriddata, to_varname="to", so_varname="so", vert_dim="de
     if vert_dim != "z_t": dataset = dataset.rename({vert_dim:"z_t"}) 
     if i_dim != "x": dataset = dataset.rename({i_dim:"x"})
     if j_dim != "y": dataset = dataset.rename({j_dim:"y"})
+    if (time_dim != "time_counter") and (time_dim is not None): 
+        dataset = dataset.rename({time_dim:"time_counter"})
 
     tsdata = {}
 
@@ -149,7 +156,7 @@ def find_omega_surfs( tsdata, neutralgrid, zgriddata,
         Must contain the following information about the vertical C-grid 
         discretization
 
-            hgriddata["deptht"]: DataArray (z_t, y, x)
+            zgriddata["deptht"]: DataArray (z_t, y, x)
             Depth of the T-points 
 
 
@@ -378,9 +385,137 @@ def find_omega_surfs( tsdata, neutralgrid, zgriddata,
 
     return surf_dataset
 
+def _track_cast_in_time( castT, castS, castZ, zpin=100., tpin=0, eos='gsw'):
+    """
+    Track an omega surface that intersects a fixed horizontal grid point (ipin, jpin) 
+    at a specific depth (zpin) at a specific time (tpin). This function is valuable when
+    calculating omega surfaces that evolve in time
+
+    Parameters
+    __________
+    castT: 2-D ndarray (time, z_t)
+    Potential or conservative temperature for a fluid column (depending on the equation of state, 
+    see `eos` argument)
+
+    castS: 2-D ndarray (time, z_t)
+    Practical or absolute salinity for a fluid column (depending on the equation of state, 
+    see `eos` argument)
+
+    castZ: 1-D ndarray (z_t)
+    Depth of the T-points in the fluid column
+
+    zpin: Float (Default = 100m)
+        Depth of the fixed point
+
+    tpin: Integer (Default = 0)
+        Time index of the fixed point
+
+    eos: String or Function or Tuple of Functions (optional, default="gsw")
+        Specification for the equation of state.
+
+        The definitions of temperature (potential vs conservative) and
+        salinity (practical vs absolute) must match the equation of state.
+        By default the "gsw" equation of state is used which depends on#
+        absolute salinity and conservative temperature.
+
+        Two premade options from NeutralOcean are described below:
+            "gsw" - TEOS-10 Gibbs Sea Water
+            "jmd95" - Jackett and McDougall 1995 equation of state
+
+
+        (Description below from NeutralOcean documentation)
+        If a str, can be any of the strings accepted by
+        `neutralocean.eos.tools.make_eos`,
+        e.g. `'jmd95'`, `'jmdfwg06'`, `'gsw'`.
+
+        If a function, must take three inputs corresponding to `S`, `T`, and
+        `P`, and output the density (or specific volume).  This form is not
+        allowed when `diags` is `True`.  This can be made as, e.g.,
+        `eos = neutralocean.eos.make_eos('gsw')`
+        for a non-Boussinesq ocean, or as
+        `eos = neutralocean.eos.make_eos('gsw', grav, rho_c)`
+        for a Boussinesq ocean with `grav` and `rho_c` (see inputs below).
+
+        If a tuple of functions, the first element must be a function for the
+        equation of state as above, and the second element must be a function
+        taking the same three inputs as above and returning two outputs, namely
+        the partial derivatives of the equation of state with respect to `S`
+        and `T`.  The second element can be made as, e.g.,
+        `eos_s_t = neutralocean.eos.make_eos_s_t('gsw', grav, rho_c)`
+
+        The function (or the first element of the tuple of functions) should be
+        `@numba.njit` decorated and need not be vectorized -- it will be called
+        many times with scalar inputs.
+
+    Returns
+    __________
+    n_S, n_T, n_Z : Tuple of 1D ndarrays (time)
+
+        Practical / Absolute Salinity, Potential / Conservative Temperature,
+        and pressure / depth along the neutral trajectory.
+
+    """
+
+    # If only one vertical grid point, return the casts
+    if len(castZ) == 1:
+        out_shape = np.squeeze(castT).shape
+        return np.squeeze(castS), np.squeeze(castT), np.broadcast_to(castZ, castT.shape)
+
+    # Find the neutral trajectory AFTER (and including) the time pin
+    castT_after = castT[slice(tpin, None, 1),:]
+    castS_after = castS[slice(tpin, None, 1),:]
+    castZ_after = np.broadcast_to(castZ, castT_after.shape)
+
+    print(castT_after.shape)
+    print(castS_after.shape)
+    print(castZ_after.shape)
+
+    n_after = neutral_trajectory(S=castS_after, T=castT_after, P=castZ_after, p0=float(zpin), vert_dim=-1)
+
+    # Find the neutral trajectory BEFORE (and including) the time pin
+    castT_before = castT[slice(tpin, None, -1),:]
+    castS_before = castS[slice(tpin, None, -1),:]
+    castZ_before = np.broadcast_to(castZ, castT_before.shape)
+
+    n_before = neutral_trajectory(S=castS_before, T=castT_before, P=castZ_before, p0=float(zpin), vert_dim=-1)
+
+    # Combine the before and after trajectories to provide a full time series of T, S, and Z
+    n_S = np.append(n_before[0][::-1], n_after[0][1:])
+    n_T = np.append(n_before[1][::-1], n_after[1][1:])
+    n_Z = np.append(n_before[2][::-1], n_after[2][1:])
+
+    return n_S, n_T, n_Z
+
+def get_casts_from_dataarray( da, ipins, jpins ):
+    
+    da_out = da.isel( x=xr.DataArray(ipins, dims='cast'),
+                    y=xr.DataArray(jpins, dims='cast'))
+    
+    da_out = da_out.assign_coords({'ipin':('cast', ipins),
+                                   'jpin':('cast', jpins)})
+    
+    return da_out
+
+def track_casts_in_time(tsdata, zgriddata, zpin, ipins, jpins, tpin, eos='gsw'):
+
+    castT = get_casts_from_dataarray(tsdata['to'], ipins, jpins)
+    castS = get_casts_from_dataarray(tsdata['so'], ipins, jpins)
+    castZ = get_casts_from_dataarray(zgriddata['deptht'], ipins, jpins)
+
+    return xr.apply_ufunc(_track_cast_in_time, castT, castS, castZ, 
+    input_core_dims=[['time_counter', 'z_t'],['time_counter','z_t'],['z_t']],
+    output_core_dims=[['time_counter'],['time_counter'],['time_counter']],
+    output_dtypes=[castS.dtype,castT.dtype,castZ.dtype],
+    dask='parallelized', vectorize=True,
+    kwargs={'zpin':zpin, 'tpin':tpin, 'eos':eos}, 
+    dask_gufunc_kwargs={'allow_rechunk':True} )
+
+
+
+
 def find_evolving_omega_surfs( tsdata, neutralgrid, zgriddata, 
                                zpins, ipins, jpins, tpins, calc_veronis=True, calc_potsurf=True, itmin = None, itmax = None,
-                               **kwargs ):
+                               eos = 'gsw', **kwargs ):
 
     """
     Calculate time-evolving omega surfaces which intersect specific grid points
@@ -468,6 +603,43 @@ def find_evolving_omega_surfs( tsdata, neutralgrid, zgriddata,
         itmax = Integer -> The surface will not be calculated for time indices
                            greater than itmax. 
 
+    eos: String or Function or Tuple of Functions (optional, default="gsw")
+        Specification for the equation of state.
+
+        The definitions of temperature (potential vs conservative) and
+        salinity (practical vs absolute) must match the equation of state.
+        By default the "gsw" equation of state is used which depends on#
+        absolute salinity and conservative temperature.
+
+        Two premade options from NeutralOcean are described below:
+            "gsw" - TEOS-10 Gibbs Sea Water
+            "jmd95" - Jackett and McDougall 1995 equation of state
+
+
+        (Description below from NeutralOcean documentation)
+        If a str, can be any of the strings accepted by
+        `neutralocean.eos.tools.make_eos`,
+        e.g. `'jmd95'`, `'jmdfwg06'`, `'gsw'`.
+
+        If a function, must take three inputs corresponding to `S`, `T`, and
+        `P`, and output the density (or specific volume).  This form is not
+        allowed when `diags` is `True`.  This can be made as, e.g.,
+        `eos = neutralocean.eos.make_eos('gsw')`
+        for a non-Boussinesq ocean, or as
+        `eos = neutralocean.eos.make_eos('gsw', grav, rho_c)`
+        for a Boussinesq ocean with `grav` and `rho_c` (see inputs below).
+
+        If a tuple of functions, the first element must be a function for the
+        equation of state as above, and the second element must be a function
+        taking the same three inputs as above and returning two outputs, namely
+        the partial derivatives of the equation of state with respect to `S`
+        and `T`.  The second element can be made as, e.g.,
+        `eos_s_t = neutralocean.eos.make_eos_s_t('gsw', grav, rho_c)`
+
+        The function (or the first element of the tuple of functions) should be
+        `@numba.njit` decorated and need not be vectorized -- it will be called
+        many times with scalar inputs.
+
     kwargs:
         Additional keyword arguments for `find_omega_surfs`
         This includes keyword arguments for the equation of state and the number
@@ -514,14 +686,14 @@ def find_evolving_omega_surfs( tsdata, neutralgrid, zgriddata,
         castS_after = castS.isel(time_counter=np.arange(tpin,nt,1,dtype=int))
         castZ_after = castZ.broadcast_like(castT_after)
 
-        n_after = neutral_trajectory(S=castS_after, T=castT_after, P=castZ_after, p0=float(zpin), vert_dim='z_t')
+        n_after = neutral_trajectory(S=castS_after, T=castT_after, P=castZ_after, p0=float(zpin), vert_dim='z_t', eos=eos)
 
         # Find the neutral trajectory BEFORE (and including) the time pin
         castT_before = castT.isel(time_counter=np.arange(tpin,-1,-1,dtype=int))
         castS_before = castS.isel(time_counter=np.arange(tpin,-1,-1,dtype=int))
         castZ_before = castZ.broadcast_like(castT_before)
 
-        n_before = neutral_trajectory(S=castS_before, T=castT_before, P=castZ_before, p0=float(zpin), vert_dim='z_t')
+        n_before = neutral_trajectory(S=castS_before, T=castT_before, P=castZ_before, p0=float(zpin), vert_dim='z_t', eos=eos)
 
         # Combine the before and after trajectories to provide a full time series of T, S, and Z
         # n_S = n_S + [np.append(n_before[0][::-1], n_after[0][1:])]
